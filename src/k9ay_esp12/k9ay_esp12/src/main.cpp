@@ -72,9 +72,6 @@ int latchPin = 15;
 int clockPin = 14;
 int dataPin = 13;
 /*******/
-int gpio6_pin = 12;
-int gpio7_pin = 13;
-int gpio8_pin = 15;
 char stat[8] =  "";
 int tim = 0;
 int sec = 0;
@@ -83,6 +80,8 @@ int hour = 0;
 int day = 0;
 int flagAP=0;
 int flag_off=0;
+int out1=0;
+int out2=0;
 //*********************************************
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
@@ -427,12 +426,17 @@ void turnOffAll()
   currentRload="";
   currentPa="";
   stat[0]=stat[1]=stat[2]=stat[3]=stat[4]=stat[5]=stat[6]=stat[7]='0';
-  
+  out1=0;
+  out2=0;
+  digitalWrite(latchPin, LOW);
+  SPI.transfer(0);
+  SPI.transfer(0);
+  digitalWrite(latchPin, HIGH);
+  digitalWrite(PA_pin, LOW);
 }
  
 void setup(void){
   delay(100);
-  SPI.begin();
   pinMode(PA_pin, OUTPUT);
   digitalWrite(PA_pin, LOW);
   pinMode(LED_pin, OUTPUT);
@@ -445,12 +449,14 @@ void setup(void){
   digitalWrite(latchPin, LOW);
   pinMode(clockPin, OUTPUT);
   digitalWrite(clockPin, LOW);
-  pinMode(gpio6_pin, OUTPUT);
-  digitalWrite(gpio6_pin, LOW);
-  pinMode(gpio7_pin, OUTPUT);
-  digitalWrite(gpio7_pin, LOW);
-  pinMode(gpio8_pin, OUTPUT);
-  digitalWrite(gpio8_pin, LOW);
+
+  digitalWrite(OE_pin, LOW);
+  SPI.begin();
+  digitalWrite(latchPin, LOW);
+  SPI.transfer(0);
+  SPI.transfer(0);
+  digitalWrite(latchPin, HIGH);
+  digitalWrite(OE_pin, LOW);
 
   Serial.begin(115200);
   Serial.println();
@@ -504,10 +510,14 @@ void setup(void){
   
   server.on("/setN", [](){
     /*turnOffAll();*/
+    out2=0b00001000;
     currentlabel=String(label0);
- 
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetN", [](){
@@ -519,10 +529,14 @@ void setup(void){
   });
   server.on("/setNE", [](){
     /*turnOffAll();*/
+    out2=0b00001001;
     currentlabel=String(label1);
-    
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetNE", [](){
@@ -534,10 +548,14 @@ void setup(void){
   });
   server.on("/setE", [](){
     /*turnOffAll();*/
-   
+    out2=0b00001100;
     currentlabel=String(label2);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetE", [](){
@@ -549,10 +567,14 @@ void setup(void){
   });
   server.on("/setSE", [](){
     /*turnOffAll();*/
-   
+    out2=0b00000010;
     currentlabel=String(label3);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetSE", [](){
@@ -564,10 +586,14 @@ void setup(void){
   });
   server.on("/setS", [](){
     /*turnOffAll();*/
- 
+    out2=0b00000000;
     currentlabel=String(label4);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetS", [](){
@@ -579,10 +605,14 @@ void setup(void){
   });
   server.on("/setSW", [](){
     /*turnOffAll();*/
- 
+    out2=0b00000001;
     currentlabel=String(label5);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetSW", [](){
@@ -594,10 +624,14 @@ void setup(void){
   });
   server.on("/setW", [](){
     /*turnOffAll();*/
-  
+    out2=0b00000100;
     currentlabel=String(label6);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetW", [](){
@@ -609,10 +643,14 @@ void setup(void){
   });
   server.on("/setNW", [](){
    /*turnOffAll();*/
- 
+    out2=0b00001010;
     currentlabel=String(label7);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/resetNW", [](){
@@ -633,45 +671,77 @@ void setup(void){
     currentRload=" " + String(label300)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00000001;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/set390", [](){
     currentRload=" " + String(label390)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00000010;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/set430", [](){
     currentRload=" " + String(label430)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00000100;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/set470", [](){
     currentRload=" " + String(label470)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00001000;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/set510", [](){
     currentRload=" " + String(label510)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00010000;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/set560", [](){
     currentRload=" " + String(label560)+ " Ohm";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
+    out1 = 0b00100000;
+    digitalWrite(latchPin, LOW);
+    SPI.transfer(out1);
+    SPI.transfer(out2);
+    digitalWrite(latchPin, HIGH);
     handleSwitch();
   });
   server.on("/setPa", [](){
+    digitalWrite(PA_pin, HIGH);
     currentPa=" " + String(labelpa);
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
     handleSwitch();
   });
   server.on("/resetPa", [](){
+    digitalWrite(PA_pin, LOW);
     currentPa=" ";
     webPage += "<script> document.location.href = \"/switch\"</script>";
     server.send(200, "text/html", webPage);
@@ -693,6 +763,7 @@ void connectWifi() {
 
  
 void loop(void){
+  digitalWrite(OE_pin, LOW);
   if (connect) {
     Serial.println("Connect requested");
     connect = false;
@@ -715,10 +786,10 @@ void loop(void){
         Serial.println(ssid);
         Serial.print("IP address: ");
         Serial.println(WiFi.localIP());
-        digitalWrite(gpio8_pin, HIGH);
+        digitalWrite(LED_pin, HIGH);
         flagAP=1;
       } else if (s == WL_NO_SSID_AVAIL) {
-        digitalWrite(gpio8_pin, LOW);
+        digitalWrite(LED_pin, LOW);
         flagAP=0;
         WiFi.disconnect();
       }
