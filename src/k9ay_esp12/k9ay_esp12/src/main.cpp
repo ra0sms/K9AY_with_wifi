@@ -14,7 +14,7 @@ ra0sms@bk.ru
 #include <EEPROM.h>
 #include <SPI.h>
 //**********************************************
-const char *softAP_ssid = "K9AY_Loop_sn001";
+const char *softAP_ssid = "K9AY_Loop_sn002";
 const char *softAP_password = "1234567890";
 const char *myHostname = "esp8266";
 //*********************************************
@@ -227,6 +227,7 @@ void buildXML() {
 void handleSwitch ()
 {
   buildJavascript();
+  digitalWrite(clockPin, LOW);
   webPage = "<!DOCTYPE HTML> <html> <head> <title>K9AY control</title>";
   /*webPage += "<meta http-equiv=\'refresh\' content=\'3\'>";*/
   webPage += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
@@ -449,15 +450,17 @@ void setup(void){
   digitalWrite(latchPin, LOW);
   pinMode(clockPin, OUTPUT);
   digitalWrite(clockPin, LOW);
-
+  delay(200);
   digitalWrite(OE_pin, LOW);
   SPI.begin();
   digitalWrite(latchPin, LOW);
   SPI.transfer(0);
   SPI.transfer(0);
   digitalWrite(latchPin, HIGH);
+  pinMode(OE_pin, OUTPUT);
   digitalWrite(OE_pin, LOW);
-
+  digitalWrite(clockPin, LOW);
+  delay(100);
   Serial.begin(115200);
   Serial.println();
   Serial.print("Configuring access point...");
@@ -518,6 +521,7 @@ void setup(void){
     SPI.transfer(out1);
     SPI.transfer(out2);
     digitalWrite(latchPin, HIGH);
+    digitalWrite(clockPin, LOW);
     handleSwitch();
   });
   server.on("/resetN", [](){
