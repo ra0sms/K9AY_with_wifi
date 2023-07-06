@@ -14,7 +14,7 @@ ra0sms@bk.ru
 #include <EEPROM.h>
 #include <SPI.h>
 //**********************************************
-const char *softAP_ssid = "K9AY_Loop_sn002";
+const char *softAP_ssid = "K9AY_Loop_sn006";
 const char *softAP_password = "1234567890";
 const char *myHostname = "esp8266";
 //*********************************************
