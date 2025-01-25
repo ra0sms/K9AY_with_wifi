@@ -8,7 +8,7 @@ This antenna has 8 directions and switchable Load resistor
 * Control via any web-browser
 * Source code for PlatformioIO
 
-More information about loop and construction details - https://hamparts.shop/blog/k9ay-design.html
+More information about loop and construction details - https://ra0sms.com/k9ay-wifi-interface/
 
 ------
 
