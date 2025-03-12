@@ -202,7 +202,7 @@ function process() {
     xmlHttp.onreadystatechange = handleServerResponse;
     xmlHttp.send(null);
   }
-  setTimeout('process()', 100); // Исправлено: 100 мс вместо 0.1 мс
+  setTimeout('process()', 100);
 }
 
 function handleServerResponse() {
