@@ -14,7 +14,7 @@ ra0sms@bk.ru
 #include <EEPROM.h>
 #include <SPI.h>
 //**********************************************
-const char *softAP_ssid = "K9AY_Loop_sn006";
+const char *softAP_ssid = "K9AY_Loop_sn028";
 const char *softAP_password = "1234567890";
 const char *myHostname = "esp8266";
 //*********************************************
@@ -183,66 +183,104 @@ void BuildSVG()
 }
 
 void buildJavascript() {
-  javaScript = "<SCRIPT>\n";
-  javaScript += "var xmlHttp=createXmlHttpObject();\n";
+  javaScript = R"(
+<SCRIPT>
+var xmlHttp = createXmlHttpObject();
 
-  javaScript += "function createXmlHttpObject(){\n";
-  javaScript += " if(window.XMLHttpRequest){\n";
-  javaScript += "    xmlHttp=new XMLHttpRequest();\n";
-  javaScript += " }else{\n";
-  javaScript += "    xmlHttp=new ActiveXObject('Microsoft.XMLHTTP');\n";
-  javaScript += " }\n";
-  javaScript += " return xmlHttp;\n";
-  javaScript += "}\n";
+function createXmlHttpObject() {
+  if (window.XMLHttpRequest) {
+    xmlHttp = new XMLHttpRequest();
+  } else {
+    xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
+  }
+  return xmlHttp;
+}
 
-  javaScript += "function process(){\n";
-  javaScript += " if(xmlHttp.readyState==0 || xmlHttp.readyState==4){\n";
-  javaScript += "   xmlHttp.open('PUT','xml',true);\n";
-  javaScript += "   xmlHttp.onreadystatechange=handleServerResponse;\n";
-  javaScript += "   xmlHttp.send(null);\n";
-  javaScript += " }\n";
-  javaScript += " setTimeout('process()',0.1);\n";
-  javaScript += "}\n";
+function process() {
+  if (xmlHttp.readyState == 0 || xmlHttp.readyState == 4) {
+    xmlHttp.open('PUT', 'xml', true);
+    xmlHttp.onreadystatechange = handleServerResponse;
+    xmlHttp.send(null);
+  }
+  setTimeout('process()', 100); // Исправлено: 100 мс вместо 0.1 мс
+}
 
-  javaScript += "function handleServerResponse(){\n";
-  javaScript += " if(xmlHttp.readyState==4 && xmlHttp.status==200){\n";
-  javaScript += "   xmlResponse=xmlHttp.responseXML;\n";
-  javaScript += "   xmldoc = xmlResponse.getElementsByTagName('response');\n";
-  javaScript += "   message = xmldoc[0].firstChild.nodeValue;\n";
-  javaScript += "   document.getElementById('runtime').innerHTML=message;\n";
-  javaScript += " }\n";
-  javaScript += "}\n";
-
-  javaScript += "</SCRIPT>\n";
+function handleServerResponse() {
+  if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+    var xmlResponse = xmlHttp.responseXML;
+    var xmldoc = xmlResponse.getElementsByTagName('response');
+    var message = xmldoc[0].firstChild.nodeValue;
+    document.getElementById('runtime').innerHTML = message;
+  }
+}
+</SCRIPT>
+)";
 }
 
 void buildXML() {
- XML = "<?xml version='1.0'?>";
-  XML += "<response>";
+  XML = "<?xml version='1.0'?><response>";
   XML += currentlabel + " " + currentRload + " " + currentPa;
   XML += "</response>";
 }
 
 
-void handleSwitch ()
-{
+void handleSwitch() {
   buildJavascript();
   digitalWrite(clockPin, LOW);
-  webPage = "<!DOCTYPE HTML> <html> <head> <title>K9AY control</title>";
-  /*webPage += "<meta http-equiv=\'refresh\' content=\'3\'>";*/
-  webPage += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  webPage += "<style type=\"text/css\">";
-  webPage += ".btn {background-color: #4CAF50; border: none; color: white; padding: 8px 16px; text-align: center; text-decoration: none; display: inline-block; font-size: 13px; margin: 1px 2px; -webkit-transition-duration: 0.4s; transition-duration: 0.4s; cursor: pointer;}";
-  webPage += ".btn-on {background-color: white; color: black; border: 3px solid #4CAF50;}";
-  webPage += ".btn-off {background-color: white; color: black; border: 3px solid #f44336;}";
-  webPage += ".btn-on:active {background: green;}";
-  webPage += ".btn-off:active {background: red;}";
-  webPage += "</style> </head>";
+
+  // Массив для кнопок направлений
+  const String directions[] = {"N", "NW", "NE", "W", "E", "SW", "SE", "S"};
+  const String rloads[] = {"300", "390", "430", "470", "510", "560"};
+
+  // Начало HTML-страницы
+  String webPage = R"(
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>K9AY control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    .btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 13px;
+      margin: 1px 2px;
+      -webkit-transition-duration: 0.4s;
+      transition-duration: 0.4s;
+      cursor: pointer;
+    }
+    .btn-on {
+      background-color: white;
+      color: black;
+      border: 3px solid #4CAF50;
+    }
+    .btn-off {
+      background-color: white;
+      color: black;
+      border: 3px solid #f44336;
+    }
+    .btn-on:active {
+      background: green;
+    }
+    .btn-off:active {
+      background: red;
+    }
+  </style>
+</head>
+)";
+
   webPage += javaScript;
-  webPage += "<body bgcolor=\"#c7daed\">";
-  webPage += "<BODY onload='process()'>";
-  webPage += "<p><font color=\"red\" face=\"Arial\"><h2>&nbsp<A id='runtime'> </A></font></h2></p>";
-  webPage += "</BODY>";
+  webPage += R"(
+<body bgcolor="#c7daed">
+  <BODY onload='process()'>
+    <p><font color="red" face="Arial"><h2>&nbsp;<A id='runtime'></A></font></h2></p>
+)";
+
   webPage += "<p><h3>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=\"setN\"><button class=\"btn btn-on\">N&nbsp</button></a>";
   webPage += "<p><h3>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=\"setNW\"><button class=\"btn btn-on\">NW</button></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=\"setNE\"><button class=\"btn btn-on\">NE</button></a>";
   webPage += "<p><h3><a href=\"setW\"><button class=\"btn btn-on\">W&nbsp</button></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=\"setE\"><button class=\"btn btn-on\">E&nbsp</button></a>";
@@ -251,9 +289,10 @@ void handleSwitch ()
   webPage += "<p><a href=\"resetAll\"><button class=\"btn btn-off\">OFF</button></a></h3></p>";
   webPage += "<p><h2>Rload: <a href=\"set300\"><button class=\"btn btn-on\">300</button></a>&nbsp<a href=\"set390\"><button class=\"btn btn-on\">390</button></a>&nbsp<a href=\"set430\"><button class=\"btn btn-on\">430</button></a>&nbsp<a href=\"set470\"><button class=\"btn btn-on\">470</button></a>&nbsp<a href=\"set510\"><button class=\"btn btn-on\">510</button></a>&nbsp<a href=\"set560\"><button class=\"btn btn-on\">560</button></a></h2></p>";
   webPage += "<p><h2>Preamp +15dB:<a href=\"setPa\"><button class=\"btn btn-on\">ON</button></a>&nbsp<a href=\"resetPa\"><button class=\"btn btn-off\">OFF</button></a></h2></p>";
-  webPage += "<p><a href ='/'>Return to the home page</a></p>";  
+  webPage += "<p><a href ='/'>Return to the home page</a></p>";
+
   server.send(200, "text/html", webPage);
-  }
+}
 
 void handleRoot() {
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
