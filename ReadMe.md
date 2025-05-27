@@ -6,9 +6,11 @@ This antenna has 8 directions and switchable Load resistor
 * 2 loops and 8 directions
 * Need only one power supply (12-13.8VDC, 500mA)
 * Control via any web-browser
-* Source code for PlatformioIO
+* Source code for Arduino IDE
 
 More information about loop and construction details - https://ra0sms.com/k9ay-wifi-interface/
+
+![k9ay_directions](pics/k9ay_directions.png)
 
 ------
 
