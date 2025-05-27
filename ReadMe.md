@@ -9,7 +9,8 @@ This antenna has 8 directions and switchable Load resistor
 * Source code for Arduino IDE
 
 More information about loop and construction details - https://ra0sms.com/k9ay-wifi-interface/
-![Last schematic version](https://github.com/ra0sms/K9AY_with_wifi/blob/main/KiCad/K9AY_switch/K9AY_switch.pdf)
+
+[Last schematic version](https://github.com/ra0sms/K9AY_with_wifi/blob/main/KiCad/K9AY_switch/K9AY_switch.pdf)
 
 ![k9ay_directions](pics/k9ay_directions.png)
 
