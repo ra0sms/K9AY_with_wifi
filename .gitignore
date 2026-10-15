@@ -1,3 +1,6 @@
 docs/datasheets/
 BPF/
 DipTrace/
+KiCad/K9AY_switch/K9AY_switch-backups/
+*.tar.gz
+KiCad/K9AY_switch/k9ay_v5.zip
